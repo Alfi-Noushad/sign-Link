@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Language Demo</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient-layer" aria-hidden="true">
+    <div class="ambient-grid"></div>
+    <div class="ambient-shape shape-ring" data-parallax="0.16"></div>
+    <div class="ambient-shape shape-diamond" data-parallax="0.22"></div>
+    <div class="ambient-shape shape-orbit" data-parallax="0.12"></div>
+    <div class="ambient-shape shape-bar" data-parallax="0.19"></div>
+  </div>
+  <div class="page-shell">
+    <header class="topbar">
+      <nav class="topnav" aria-label="Primary">
+        <a class="nav-link" href="#overview">Overview</a>
+        <a class="nav-link" href="#translator-card">Text to Sign</a>
+        <a class="nav-link" href="#detector-card">Sign to Text</a>
+        <a class="nav-link" href="#audio-card">Text to Audio</a>
+      </nav>
+    </header>
+
+    <main class="dashboard section">
+      <section class="overview-stack" id="overview">
+      <section class="intro-shell">
+        <article class="intro-card intro-copy" data-reveal>
+          <p class="eyebrow">Project</p>
+          <h1>Sign language translation demo for the browser.</h1>
+          <p class="hero-text">
+            This project brings three modules into one place: text to sign playback, sign to text
+            prediction from a webcam, and browser-based text to speech.
+          </p>
+          <p class="hero-text">
+            It uses local sign clips when they are available and falls back to generated letter
+            cards when a matching clip is missing, so the demo can still run without the full dataset.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#translator-card">Try text to sign</a>
+            <a class="button button-secondary" href="#detector-card">Try sign to text</a>
+          </div>
+          <div class="hero-stats">
+            <article class="mini-stat">
+              <span class="mini-stat-value" data-stat="sign_count">--</span>
+              <span class="mini-stat-label">loaded sign entries</span>
+            </article>
+            <article class="mini-stat">
+              <span class="mini-stat-value" data-stat="model_accuracy">Not loaded</span>
+              <span class="mini-stat-label">model status</span>
+            </article>
+            <article class="mini-stat">
+              <span class="mini-stat-value" data-stat="feature_count">Not loaded</span>
+              <span class="mini-stat-label">feature set</span>
+            </article>
+          </div>
+        </article>
+
+        <article class="intro-card objective-card" data-reveal>
+          <div class="card-head">
+            <div>
+              <span class="pill">Notes</span>
+              <h3>What this build focuses on</h3>
+            </div>
+            <span class="muted">Current scope</span>
+          </div>
+          <ul class="clean-list clean-list-spacious">
+            <li>Keep the full demo in one browser page so each module is easy to test.</li>
+            <li>Show how MediaPipe landmarks can be used for simple live sign prediction.</li>
+            <li>Play local sign clips when they exist and fall back gracefully when they do not.</li>
+            <li>Present the project honestly, with the current limits visible instead of hidden.</li>
+          </ul>
+          <p class="hero-text objective-note">
+            If the local model or clip dataset is missing, the page still loads and shows which parts are available.
+          </p>
+        </article>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card" data-reveal>
+          <span class="pill">Modules</span>
+          <h3>Included in the demo</h3>
+          <ul class="clean-list">
+            <li>Text to sign playback with local clips and letter fallback.</li>
+            <li>Live sign to text prediction from webcam frames.</li>
+            <li>Detected text editing tools for spaces, backspace, and clear.</li>
+            <li>Browser speech output using the voices already installed on the system.</li>
+          </ul>
+        </article>
+
+        <article class="info-card" data-reveal>
+          <span class="pill">Pipeline</span>
+          <h3>How the app works</h3>
+          <ul class="clean-list">
+            <li>The webcam feed is sampled in the browser and sent to the local Python server.</li>
+            <li>MediaPipe extracts 21 hand landmarks from the captured frame.</li>
+            <li>A lightweight classifier predicts the current sign label when a model file is present.</li>
+            <li>Generated text can be spoken in the browser or sent to the text to sign player.</li>
+          </ul>
+        </article>
+
+        <article class="info-card" data-reveal>
+          <span class="pill">Limits</span>
+          <h3>Current constraints</h3>
+          <ul class="clean-list">
+            <li>Live prediction works best with one hand, steady framing, and good lighting.</li>
+            <li>Text to sign quality depends on which local sign clips are available.</li>
+            <li>When no clip dataset is installed, the translator uses generated letter cards only.</li>
+            <li>Speech output depends on browser support and installed system voices.</li>
+          </ul>
+        </article>
+      </section>
+      </section>
+
+      <section class="workspace-grid">
+        <article class="workspace-card workspace-card-wide" id="translator-card" data-reveal>
+          <div class="card-head">
+            <div>
+              <span class="pill">Text to sign</span>
+              <h2>Translate text into sign clips.</h2>
+            </div>
+            <span class="muted" id="clip-counter">No sequence yet</span>
+          </div>
+
+          <div class="translator-layout">
+            <div class="translator-editor">
+              <form id="translate-form" class="translate-form">
+                <label class="field-label" for="translator-input">Enter text</label>
+                <textarea
+                  id="translator-input"
+                  name="text"
+                  rows="5"
+                  placeholder="Try a short phrase like: thank you friend"
+                ></textarea>
+                <div class="prompt-row">
+                  <button class="chip-button" type="button" data-sample="thank you">thank you</button>
+                  <button class="chip-button" type="button" data-sample="good morning">good morning</button>
+                  <button class="chip-button" type="button" data-sample="learn sign language">learn sign language</button>
+                  <button class="chip-button" type="button" data-sample="please help family">please help family</button>
+                </div>
+                <div class="form-actions">
+                  <button class="button button-primary" type="submit">Generate sequence</button>
+                  <button class="button button-secondary" id="replay-button" type="button">Replay</button>
+                </div>
+              </form>
+
+              <div class="feedback-row">
+                <span class="status-pill" id="status-pill">Ready</span>
+                <span class="helper-text" id="finger-spell-note">Finger-spelled words and fallback notes will appear here when needed.</span>
+              </div>
+
+              <div class="results-strip" id="results-strip" aria-live="polite"></div>
+            </div>
+
+            <div class="player-shell compact-shell">
+              <div class="player-topline">
+                <span class="pill pill-soft">Sequence player</span>
+                <span class="muted" id="active-label">Idle</span>
+              </div>
+
+              <div class="player-stage">
+                <video id="clip-video" class="clip-video" playsinline preload="metadata"></video>
+
+                <div class="fallback-stage" id="fallback-stage">
+                  <div class="fallback-ring"></div>
+                  <div class="fallback-card">
+                    <span class="fallback-kicker">Generated fallback</span>
+                    <strong id="fallback-letter">A</strong>
+                    <span id="fallback-label">Waiting for a sequence...</span>
+                  </div>
+                </div>
+
+                <div class="player-overlay">
+                  <span>Playback status</span>
+                  <strong id="sequence-title">Your translation will play here</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="workspace-card" id="detector-card" data-reveal>
+          <div class="card-head">
+            <div>
+              <span class="pill">Sign to text</span>
+              <h2>Live detector with visible prediction.</h2>
+            </div>
+            <span class="muted" id="camera-state">Camera idle</span>
+          </div>
+
+          <div class="camera-stage">
+            <video id="camera-video" class="camera-video" autoplay playsinline muted></video>
+            <canvas id="camera-canvas" class="camera-canvas"></canvas>
+            <div class="camera-placeholder" id="camera-placeholder">
+              <span>Open the camera to start detection</span>
+              <strong>Show one hand clearly, keep the sign steady, and watch the live prediction card update.</strong>
+            </div>
+
+            <div class="prediction-spotlight">
+              <span>Live model guess</span>
+              <strong id="prediction-spotlight">-</strong>
+              <small id="prediction-subtext">Waiting for camera access</small>
+            </div>
+
+            <div class="camera-overlay">
+              <span id="live-sign-label">No hand detected</span>
+              <strong id="live-sign-meta">Waiting for camera access</strong>
+            </div>
+          </div>
+
+          <div class="top-predictions" id="top-predictions" aria-live="polite"></div>
+
+          <div class="studio-controls">
+            <button class="button button-primary" id="start-camera-button" type="button">Start camera</button>
+            <button class="button button-secondary" id="stop-camera-button" type="button">Stop camera</button>
+            <button class="button button-secondary" id="add-current-button" type="button">Use current</button>
+            <button class="button button-secondary" id="space-sign-button" type="button">Add space</button>
+            <button class="button button-secondary" id="backspace-sign-button" type="button">Backspace</button>
+            <button class="button button-secondary" id="clear-sign-button" type="button">Clear</button>
+          </div>
+
+          <div class="signal-row">
+            <span class="signal-chip">
+              <small>Visible guess</small>
+              <strong id="current-sign-badge">-</strong>
+            </span>
+            <span class="signal-chip">
+              <small>Confidence</small>
+              <strong id="confidence-badge">0.00</strong>
+            </span>
+            <span class="signal-chip">
+              <small>Status</small>
+              <strong id="detector-status">Ready</strong>
+            </span>
+          </div>
+
+          <label class="field-label" for="sign-output">Detected text</label>
+          <textarea
+            id="sign-output"
+            rows="4"
+            placeholder="Detected text from your signs will appear here."
+          ></textarea>
+
+          <div class="studio-controls">
+            <button class="button button-primary" id="speak-sign-output-button" type="button">Speak detected text</button>
+            <button class="button button-secondary" id="send-to-audio-button" type="button">Send to audio</button>
+          </div>
+        </article>
+
+        <article class="workspace-card workspace-card-accent" id="audio-card" data-reveal>
+          <div class="card-head">
+            <div>
+              <span class="pill pill-soft">Text to audio</span>
+              <h2>Play any text as speech.</h2>
+            </div>
+            <span class="muted muted-light" id="audio-state">Speech ready</span>
+          </div>
+
+          <label class="field-label field-label-light" for="audio-text">Text to speak</label>
+          <textarea
+            id="audio-text"
+            rows="7"
+            placeholder="Type anything here, or send detected sign text into this panel."
+          >This is a simple demo of browser speech output.</textarea>
+
+          <div class="voice-grid">
+            <label class="voice-control">
+              <span>Voice</span>
+              <select id="voice-select"></select>
+            </label>
+            <label class="voice-control">
+              <span>Volume</span>
+              <input id="voice-volume" type="range" min="0" max="1" step="0.05" value="1">
+            </label>
+          </div>
+
+          <div class="studio-controls">
+            <button class="button button-primary" id="speak-audio-button" type="button">Play audio</button>
+            <button class="button button-secondary" id="stop-audio-button" type="button">Stop audio</button>
+            <button class="button button-secondary" id="fill-audio-demo-button" type="button">Use demo text</button>
+          </div>
+
+          <p class="audio-note" id="audio-note">
+            Browser speech synthesis will use the voices installed on your system.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>A compact project demo for sign recognition, sign clip playback, and browser speech.</p>
+    </footer>
+  </div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
