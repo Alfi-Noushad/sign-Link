@@ -107,9 +107,3 @@ This demo stitches together several public building blocks (MediaPipe landmarks,
 
 ---
 
-If you want, I can also:
-
-- add an example `sign_model.pkl` loader stub or tests, or
-- add a short script to package a small sample dataset into `assets/sign_videos`.
-
-Which would you like next?
