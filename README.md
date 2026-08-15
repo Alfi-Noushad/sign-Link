@@ -29,6 +29,14 @@ pip install -r requirements.txt
 - Sign to text: the frontend captures webcam frames and POSTs them to `/api/predict-sign`; the backend uses MediaPipe landmarks, a feature extractor, and a local classifier (if present) to return predictions.
 - Text to speech: uses the browser `speechSynthesis` API to speak any text in the UI.
 
+## Sign Language Alphabet Reference
+
+The demo currently supports fingerspelling based on the American Sign Language (ASL) manual alphabet shown below. This is used as the fallback when a word isn't found in the video dataset (see **Text to sign** in Features).
+
+![ASL fingerspelling alphabet chart, A to Z](web/assets/docs/asl-alphabet-chart.png)
+
+
+
 ## Project layout
 
 - [app.py](app.py) — main web server (serves `web/`, API endpoints, and dataset video files)
