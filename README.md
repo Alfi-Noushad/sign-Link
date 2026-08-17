@@ -1,4 +1,4 @@
-# Sign Language Demo
+# SIGN-LINK : Bi-Directional Sign Language Translator System
 
 A compact browser demo that combines three related capabilities:
 
